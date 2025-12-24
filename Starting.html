@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="webstyles.css" />
+
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1
+        , shrink-to-fit=no"
+    />
+    <div class="center">
+    <title>SpotiCustom</title>
+  </head>
+  <body>
+    <h1 style="text-align: center">Welcome to My Spotify App!</h1>
+    <div style="text-align: center">
+      <a href="/login" class="spotify-login-btn"> Log in with Spotify </a>
+    </div>
+</div>
+    <script>
+      function loginSpotify() {
+        const serverUrl = "http://127.0.0.1:8000";
+        window.location.href = `${serverUrl}/login`;
+      }
+      async function handleCallback() {
+        const response = await fetch("/callback"); // this is the endpoint you configured in your client-side server code
+
+        if (response.ok) {
+          const data = await response.json();
+          const accessToken = data.accessToken;
+
+          // Redirect the user to a new page using the access token
+          window.location.href = `index.html`;
+        } else {
+          console.error("Error getting the access token");
+        }
+      }
+      //handleCallback();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="webstyles.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>SpotiCustom</title>
+    <!-- <style>
+            body {
+                height: max-content;
+            }
+        </style> -->
+  </head>
+  <body>
+    <div class="menu">
+      <h1><a href="./success.html" id="maintitle">SpotiCustom</a></h1>
+      <img src="menu.png" alt="Menu" id="menu-icon" onclick="showMenu()" />
+      <div class="menu-box" id="menubox">
+        <div class="menu-links">
+          <a href="./aboutMe.html">About My Profile</a>
+          <a href="./forMe.html">For Me</a>
+          <a onclick="logOut()" style="cursor: pointer">Log Out</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="same">
+      <!-- <span id="avatar" ></span> -->
+      <img id="avatar" />
+      <h1 id="displayName"></h1>
+    </div>
+    <div class="aboutmetop">
+      <h3 id="toprac">
+        Your top
+        <input
+          type="number"
+          class="limitNum"
+          min="1"
+          max="50"
+          value="5"
+          oninput="getTopTracks(this.value)"
+        />
+        tracks from the last 30 days
+      </h3>
+      <h3 id="topart">
+        Your top
+        <input
+          type="number"
+          class="limitNum"
+          min="1"
+          max="50"
+          value="5"
+          oninput="getTopArtists(this.value)"
+        />
+        artists in the last 30 days
+      </h3>
+    </div>
+    <div class="same-line">
+      <div id="widgetContainer1" class="widget"></div>
+      <div id="widgetContainer2" class="widget right"></div>
+    </div>
+    <script src="./apiCall.js" type="text/javascript"></script>
+    <script>
+      getTopTracks(5);
+      getTopArtists(5);
+      populateUI();
+    </script>
+    <script>
+      let menu = document.getElementById("menubox");
+      let menuicon = document.getElementById("menu-icon");
+      let open = true;
+
+      function showMenu() {
+        if (open) {
+          menu.style.visibility = "visible";
+          menuicon.src = "close.png";
+        } else {
+          menu.style.visibility = "hidden";
+          menuicon.src = "menu.png";
+        }
+        open = !open;
+      }
+    </script>
+  </body>
+</html>
