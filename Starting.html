@@ -20,10 +20,10 @@
     </div>
 </div>
     <script>
-      function loginSpotify() {
-        const serverUrl = "http://127.0.0.1:8000";
-        window.location.href = `${serverUrl}/login`;
-      }
+function loginSpotify() {
+  window.location.href = "/login";
+}
+
       async function handleCallback() {
         const response = await fetch("/callback"); // this is the endpoint you configured in your client-side server code
 
