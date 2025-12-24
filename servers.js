@@ -90,6 +90,7 @@ app.get("/callback", async (req, res) => {
     res.cookie(ACCESS_COOKIE, accessToken, {
       sameSite: "lax",
       maxAge: expiresIn * 1000,
+      secure: true,
     });
 
     // Redirect so refresh/back doesn't re-use the code

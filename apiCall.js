@@ -26,7 +26,8 @@ async function fetchWebApi(endpoint, method = "GET", body) {
 
   if (!accessToken) {
     // No token cookie -> kick to login
-    window.location.href = SERVER_URL;
+    // window.location.href = SERVER_URL;
+    window.location.href = "/login";
     return null;
   }
 
