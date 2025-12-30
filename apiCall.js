@@ -396,23 +396,66 @@ async function getTopArtists(limit = 5) {
 
 // Spotify has restricted many "charts/editorial" Web API endpoints for new/dev apps.
 // The most reliable way to show "Top 50 Global" is the embed player.
-function getTopSongsGlobal() {
-  const container = document.getElementById("widgetContainer5");
+async function getTopSongsGlobal() {
+  const containerId = "widgetContainer5";
+  const container = document.getElementById(containerId);
   if (!container) return;
 
-  container.innerHTML = `
-    <iframe
-      style="border-radius:12px"
-      src="https://open.spotify.com/embed/playlist/37i9dQZEVXbMDoHDwVN2tF"
-      width="75%"
-      height="700"
-      frameborder="0"
-      allowfullscreen=""
-      allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-      loading="lazy">
-    </iframe>
-  `;
+  // Lightweight loading state
+  container.innerHTML = `<div style="padding:12px;color:rgba(255,255,255,0.75)">Loading Top 50 Global…</div>`;
+
+  try {
+    const playlistId = "37i9dQZEVXbMDoHDwVN2tF";
+    const data = await fetchWebApi(
+      `v1/playlists/${playlistId}/tracks?limit=50&market=CA`,
+      "GET"
+    );
+
+    const tracks = (data?.items || [])
+      .map((it) => it && it.track)
+      .filter((t) => t && t.id && t.name && t.album);
+
+    if (!tracks.length) {
+      container.innerHTML = `
+        <div style="padding:12px;color:rgba(255,255,255,0.75)">
+          Couldn’t load Top 50 Global right now.
+          <div style="margin-top:10px">
+            <a href="https://open.spotify.com/playlist/${playlistId}" target="_blank" rel="noreferrer"
+               style="color:#1db954;font-weight:800">Open in Spotify</a>
+          </div>
+        </div>`;
+      return;
+    }
+
+    // Add rank numbers (optional) by attaching a __rank field for rendering.
+    const ranked = tracks.map((t, i) => ({ ...t, __rank: i + 1 }));
+    renderTrackCards(ranked, containerId);
+
+    // Add rank labels without rewriting your whole renderer:
+    // prepend "1. " to the title line after render.
+    const ul = container.querySelector("ul");
+    if (ul) {
+      const lis = ul.querySelectorAll("li");
+      lis.forEach((li, idx) => {
+        const titleEl = li.querySelector("div > div"); // first title div
+        if (titleEl && titleEl.textContent && !titleEl.textContent.startsWith(`${idx + 1}. `)) {
+          titleEl.textContent = `${idx + 1}. ${titleEl.textContent}`;
+        }
+      });
+    }
+  } catch (err) {
+    console.error("Error fetching Top 50 Global:", err);
+    container.innerHTML = `
+      <div style="padding:12px;color:rgba(255,255,255,0.75)">
+        Error loading Top 50 Global.
+        <div style="margin-top:10px">
+          <a href="https://open.spotify.com/playlist/37i9dQZEVXbMDoHDwVN2tF" target="_blank" rel="noreferrer"
+             style="color:#1db954;font-weight:800">Open in Spotify</a>
+        </div>
+      </div>`;
+  }
 }
+
 
 // ---------------------------
 // "Personally Made For You"
