@@ -1,43 +1,61 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#000000" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="webstyles.css" />
+    <title>SpotiCustom — Your listening, made visible</title>
+  </head>
+  <body class="auth-page">
+    <header class="auth-bar">
+      <a class="brand" href="/" aria-label="SpotiCustom home">
+        <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span>SpotiCustom</span>
+      </a>
+      <span class="auth-status"><span class="status-dot" aria-hidden="true"></span>Powered by Spotify</span>
+    </header>
 
-<head>
-  <!-- Required meta tags -->
-  <meta charset="utf-8" />
-  <link rel="stylesheet" href="webstyles.css" />
+    <main class="auth-layout">
+      <section class="auth-copy" aria-labelledby="login-title">
+        <p class="context-line">A private view of your Spotify taste</p>
+        <h1 id="login-title">Your listening, made visible.</h1>
+        <p class="auth-lede">See the tracks and artists defining your month, then find recommendations shaped by what you actually play.</p>
+        <a href="/login" class="primary-action" id="primary-action">Continue with Spotify</a>
+        <p class="privacy-note">SpotiCustom reads your profile and listening data only after you approve Spotify access.</p>
+      </section>
 
-  <meta name="viewport" content="width=device-width, initial-scale=1
-        , shrink-to-fit=no" />
-  <div class="center">
-    <title>SpotiCustom – Personalized Spotify Insights</title>
-    <meta name="description"
-      content="Analyze your Spotify profile, discover personalized music recommendations, and explore your listening habits.">
-
-</head>
-
-<body>
-  <h1 style="text-align: center">Welcome to My Spotify App!</h1>
-  <div style="text-align: center">
-    <a href="/login" class="spotify-login-btn"> Log in with Spotify </a>
-  </div>
-  </div>
-  <script>
-
-    async function handleCallback() {
-      const response = await fetch("/callback"); // this is the endpoint you configured in your client-side server code
-
-      if (response.ok) {
-        const data = await response.json();
-        const accessToken = data.accessToken;
-
-        // Redirect the user to a new page using the access token
-        window.location.href = `index.html`;
-      } else {
-        console.error("Error getting the access token");
+      <section class="auth-preview" aria-labelledby="preview-title">
+        <div class="panel-heading">
+          <div>
+            <h2 id="preview-title">Inside your listening profile</h2>
+            <p>Three views, built from your Spotify data.</p>
+          </div>
+        </div>
+        <div class="preview-row">
+          <span class="preview-cover cover-green" aria-hidden="true">T</span>
+          <span><strong>Top tracks</strong><small>The songs on repeat this month</small></span>
+        </div>
+        <div class="preview-row">
+          <span class="preview-cover cover-light" aria-hidden="true">A</span>
+          <span><strong>Top artists</strong><small>The voices shaping your taste</small></span>
+        </div>
+        <div class="preview-row">
+          <span class="preview-cover cover-dark" aria-hidden="true">N</span>
+          <span><strong>Next listens</strong><small>Recommendations beyond your library</small></span>
+        </div>
+      </section>
+    </main>
+    <script src="/runtime-config.js"></script>
+    <script>
+      if (!window.SPOTICUSTOM_CONFIG?.spotifyAuthConfigured) {
+        const primaryAction = document.getElementById("primary-action");
+        primaryAction.href = "/aboutMe.html?preview=1";
+        primaryAction.textContent = "Open preview";
       }
-    }
-    //handleCallback();
-  </script>
-</body>
-
+    </script>
+  </body>
 </html>

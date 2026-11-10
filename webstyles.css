@@ -1,292 +1,450 @@
-/* =========================
-   SpotiCustom — Modern UI
-   Drop-in replacement for webstyles.css
-   ========================= */
-
-:root{
-  --bg: #0b0f14;
-  --panel: #121823;
-  --panel-2: #0f1622;
-  --border: rgba(255,255,255,0.08);
-  --text: rgba(255,255,255,0.92);
-  --muted: rgba(255,255,255,0.68);
-  --muted-2: rgba(255,255,255,0.55);
-  --accent: #1db954;            /* Spotify green */
-  --shadow: 0 16px 50px rgba(0,0,0,0.35);
-  --radius: 16px;
+:root {
+  --ground: #000000;
+  --surface: #111111;
+  --raised: #222222;
+  --active: #1b1b1b;
+  --border: #1f1f1f;
+  --rule: #191919;
+  --control: #444444;
+  --text: #ffffff;
+  --muted: #b4b4b4;
+  --faint: #949494;
+  --accent: #1ed760;
+  --negative: #e5566f;
+  --radius-card: 8px;
+  --radius-control: 6px;
+  --gap: 16px;
+  --card-pad: 20px;
+  --font: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
-*{ box-sizing: border-box; }
-html, body { height: 100%; }
+* { box-sizing: border-box; }
 
-body{
+html { color-scheme: dark; }
+
+body {
+  min-height: 100vh;
   margin: 0;
   color: var(--text);
-  background:
-    radial-gradient(1000px 600px at 15% -10%, rgba(29,185,84,0.18), transparent 60%),
-    radial-gradient(900px 500px at 90% 10%, rgba(72,72,255,0.18), transparent 55%),
-    var(--bg);
-  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
-  line-height: 1.35;
+  background: var(--ground);
+  font-family: var(--font);
+  font-size: 14px;
+  line-height: 1.45;
 }
 
-/* Links / buttons */
-a{ color: inherit; text-decoration: none; }
-a:hover{ opacity: 0.95; }
-button{
-  border: none;
-  background: none;
-  cursor: pointer;
-  margin: 0;
-  padding: 0;
+body.menu-open { overflow: hidden; }
+
+a { color: inherit; text-decoration: none; }
+button, input { font: inherit; }
+button { color: inherit; }
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
 }
 
-/* =========================
-   Top Nav
-   ========================= */
-.menu{
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  font-size: 15px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.brand-mark {
+  position: relative;
+  display: inline-flex;
+  width: 22px;
+  height: 22px;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #4a4a4a;
+  border-radius: 50%;
+}
+
+.brand-mark i {
+  position: absolute;
+  width: 10px;
+  height: 1px;
+  background: var(--text);
+  transform-origin: center;
+}
+.brand-mark i:nth-child(1) { transform: translateY(-3px) rotate(8deg); }
+.brand-mark i:nth-child(2) { transform: rotate(8deg); }
+.brand-mark i:nth-child(3) { transform: translateY(3px) rotate(8deg); }
+
+.status-dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+.app-bar,
+.auth-bar {
   position: sticky;
   top: 0;
-  z-index: 10;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 14px 20px;
-  background: rgba(10, 14, 20, 0.70);
-  backdrop-filter: blur(10px);
+  z-index: 20;
+  min-height: 48px;
+  background: var(--ground);
   border-bottom: 1px solid var(--border);
 }
 
-#maintitle{
-  color: var(--text);
-  letter-spacing: 0.3px;
-  font-weight: 800;
-}
-
-#menu-icon{
-  margin-left: auto;
-  cursor: pointer;
-  width: 36px;
-  height: 36px;
-  padding: 8px;
-  border-radius: 12px;
-  background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,255,255,0.08);
-  object-fit: contain;   /* prevents squish */
-}
-
-#menu-icon:hover{
-  background: rgba(255,255,255,0.10);
-}
-
-.menu-box{
-  visibility: hidden;
-  position: absolute;
-  top: 62px;
-  right: 18px;
-  width: min(260px, 80vw);
-  background: rgba(18, 24, 35, 0.95);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 14px;
-  box-shadow: var(--shadow);
-}
-
-.menu-links a{
-  display: block;
-  padding: 10px 10px;
-  border-radius: 12px;
-  color: var(--text);
-  font-weight: 600;
-}
-.menu-links a:hover{
-  background: rgba(255,255,255,0.08);
-}
-
-/* =========================
-   Hero (profile row)
-   ========================= */
-.same{
+.app-bar-inner,
+.auth-bar {
+  width: min(1180px, calc(100% - 48px));
+  margin: 0 auto;
   display: flex;
   align-items: center;
-  gap: 14px;
-  padding: 18px 20px;
-  margin: 18px auto 6px auto;
-  width: min(1100px, calc(100% - 32px));
-  background: rgba(18,24,35,0.75);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
 }
 
-#avatar{
-  width: 68px;
-  height: 68px;
-  border-radius: 50%;
-  object-fit: cover;
-  background: rgba(255,255,255,0.10);
-  border: 1px solid var(--border);
-}
+.app-bar-inner { min-height: 48px; }
 
-#displayName{
-  margin: 0;
-  font-size: clamp(20px, 3vw, 32px);
-  font-weight: 850;
-  letter-spacing: 0.2px;
-}
-
-/* =========================
-   Headings / sections
-   ========================= */
-h1, h2, h3 { margin: 0; }
-h1{ font-size: clamp(24px, 3vw, 38px); }
-h2{ font-size: clamp(18px, 2.2vw, 26px); color: var(--text); }
-h3{ font-size: 16px; color: var(--muted); font-weight: 600; }
-
-.aboutmetop{
-  width: min(1100px, calc(100% - 32px));
-  margin: 10px auto 0 auto;
+.desktop-nav {
   display: flex;
-  justify-content: space-between;
-  gap: 16px;
-  flex-wrap: wrap;
-  padding: 0 6px;
+  align-items: center;
+  gap: 28px;
+  margin-left: 52px;
 }
 
-.limitNum{
-  width: 70px;
-  margin: 0 6px;
-  padding: 8px 10px;
-  border-radius: 12px;
-  border: 1px solid var(--border);
-  background: rgba(255,255,255,0.06);
-  color: var(--text);
-}
-
-/* =========================
-   Layout helpers
-   ========================= */
-.same-line{
-  width: min(1100px, calc(100% - 32px));
-  margin: 14px auto 28px auto;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-}
-@media (max-width: 900px){
-  .same-line{ grid-template-columns: 1fr; }
-}
-
-.center{
-  width: min(900px, calc(100% - 32px));
-  margin: 18px auto;
-}
-
-/* =========================
-   Widgets (card containers)
-   ========================= */
-.widget{
-  min-height: 320px;
-  max-height: 420px;
-  overflow-y: auto;
-  background: rgba(18,24,35,0.75);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  padding: 10px;
-}
-
-/* smoother scrollbar */
-.widget::-webkit-scrollbar{ width: 10px; }
-.widget::-webkit-scrollbar-thumb{
-  background: rgba(255,255,255,0.14);
-  border-radius: 999px;
-}
-.widget::-webkit-scrollbar-track{ background: transparent; }
-
-/* The lists created in apiCall.js are <ul><li>... */
-.widget ul{
-  margin: 0;
-  padding: 0;
-}
-.widget li{
-  border-radius: 14px;
-  border: 1px solid transparent;
-  transition: transform 120ms ease, background 120ms ease, border-color 120ms ease;
-}
-.widget li:hover{
-  background: rgba(255,255,255,0.06);
-  border-color: rgba(255,255,255,0.10);
-  transform: translateY(-1px);
-}
-.widget a{
-  color: var(--accent);
-  font-weight: 700;
-}
-.widget a:hover{
-  filter: brightness(1.1);
-}
-
-/* =========================
-   Top Songs page
-   ========================= */
-.container{
-  display: flex;
-  justify-content: center;
-  padding: 10px 0 30px 0;
-}
-
-.TopSongs{
-  width: min(1100px, 92vw);
-}
-
-/* =========================
-   Spotify Login Button
-   ========================= */
-
-.spotify-login-btn{
+.desktop-nav a,
+.logout-action,
+.menu-button {
+  min-height: 44px;
   display: inline-flex;
   align-items: center;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.desktop-nav a:hover,
+.logout-action:hover,
+.menu-button:hover,
+.desktop-nav a[aria-current="page"] { color: var(--text); }
+
+.logout-action { margin-left: auto; }
+.menu-button { display: none; margin-left: auto; }
+.mobile-menu { display: none; }
+
+.app-canvas {
+  width: min(1180px, calc(100% - 48px));
+  margin: 0 auto;
+  padding: 38px 0 56px;
+}
+
+.title-row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+h1, h2, p { margin-top: 0; }
+h1 { margin-bottom: 6px; font-size: 24px; line-height: 1.2; font-weight: 600; letter-spacing: -0.02em; }
+h2 { margin-bottom: 4px; font-size: 16px; line-height: 1.3; font-weight: 600; }
+.title-row p,
+.panel-heading p { margin-bottom: 0; color: var(--muted); }
+
+.live-status,
+.auth-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.secondary-action,
+.panel-heading > a {
+  display: inline-flex;
+  min-height: 36px;
+  align-items: center;
   justify-content: center;
+  padding: 0 14px;
+  border: 1px solid var(--control);
+  border-radius: var(--radius-control);
+  color: var(--text);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.secondary-action:hover,
+.panel-heading > a:hover { background: var(--active); }
+
+.feature-panel,
+.data-panel,
+.auth-preview {
+  background: var(--surface);
+  border-radius: var(--radius-card);
+}
+
+.feature-panel,
+.data-panel { padding: var(--card-pad); }
+
+.panel-heading {
+  display: flex;
+  min-height: 44px;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 16px;
+}
+
+.spotify-frame {
+  min-height: 500px;
+  overflow: hidden;
+  border-radius: 6px;
+  background: var(--raised);
+}
+
+.spotify-frame iframe { display: block; border: 0; }
+
+.data-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--gap);
+  align-items: start;
+}
+
+.widget {
+  min-height: 360px;
+  max-height: 620px;
+  overflow-y: auto;
+}
+
+.widget ul { margin: 0; padding: 0; list-style: none; }
+
+.media-row {
+  display: grid;
+  grid-template-columns: 54px minmax(0, 1fr) auto;
+  gap: 14px;
+  min-height: 76px;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--rule);
+}
+
+.media-row:last-child { border-bottom: 0; }
+
+.media-row img {
+  width: 54px;
+  height: 54px;
+  border-radius: 3px;
+  background: var(--raised);
+  object-fit: cover;
+}
+
+.media-row.artist-row img { border-radius: 50%; }
+.media-copy { min-width: 0; }
+.media-title { overflow: hidden; color: var(--text); font-weight: 500; text-overflow: ellipsis; white-space: nowrap; }
+.media-meta { margin-top: 3px; overflow: hidden; color: var(--muted); font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
+
+.media-link {
+  display: inline-flex;
+  min-width: 54px;
+  min-height: 36px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--control);
+  border-radius: var(--radius-control);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.media-link:hover { background: var(--active); }
+
+.result-count {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--muted);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.result-count input {
+  width: 48px;
+  height: 32px;
+  padding: 0 6px;
+  border: 1px solid var(--control);
+  border-radius: var(--radius-control);
+  color: var(--text);
+  background: var(--ground);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.profile-identity {
+  display: flex;
+  align-items: center;
   gap: 10px;
+}
 
-  padding: 14px 26px;
-  margin-top: 24px;
+.profile-identity img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--raised);
+  object-fit: cover;
+}
 
-  background: #1db954;          /* Spotify green */
-  color: #0b0f14;               /* dark text for contrast */
-  font-weight: 800;
-  font-size: 16px;
-  letter-spacing: 0.4px;
+.profile-identity span { display: grid; }
+.profile-identity small { color: var(--faint); font-size: 11px; }
+.profile-identity strong { max-width: 220px; overflow: hidden; font-weight: 500; text-overflow: ellipsis; white-space: nowrap; }
 
+.state-message {
+  min-height: 64px;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  color: var(--muted);
+}
+
+.state-message.error { color: var(--text); }
+.state-message.error::before { content: ""; width: 7px; height: 7px; margin-right: 9px; border-radius: 50%; background: var(--negative); }
+
+.auth-page { display: flex; flex-direction: column; }
+.auth-bar { width: min(1180px, calc(100% - 48px)); justify-content: space-between; }
+
+.auth-layout {
+  width: min(1180px, calc(100% - 48px));
+  min-height: calc(100vh - 49px);
+  margin: 0 auto;
+  padding: 72px 0;
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(420px, 1.1fr);
+  gap: 80px;
+  align-items: center;
+}
+
+.auth-copy { max-width: 520px; }
+.context-line { margin-bottom: 16px; color: var(--accent); font-size: 13px; font-weight: 500; }
+.auth-copy h1 { max-width: 430px; margin-bottom: 20px; font-size: clamp(28px, 3vw, 32px); }
+.auth-lede { max-width: 500px; margin-bottom: 30px; color: var(--muted); font-size: 17px; line-height: 1.6; }
+
+.primary-action {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 20px;
   border-radius: 999px;
-  box-shadow: 0 10px 30px rgba(29,185,84,0.35);
-
-  transition:
-    transform 120ms ease,
-    box-shadow 120ms ease,
-    filter 120ms ease;
+  background: var(--text);
+  color: var(--ground);
+  font-weight: 600;
 }
 
-.spotify-login-btn:hover{
-  transform: translateY(-2px);
-  box-shadow: 0 14px 36px rgba(29,185,84,0.45);
-  filter: brightness(1.05);
+.primary-action:hover { background: #dedede; }
+.privacy-note { max-width: 430px; margin: 18px 0 0; color: var(--faint); font-size: 12px; }
+
+.auth-preview { padding: 24px; }
+.preview-row {
+  display: grid;
+  grid-template-columns: 52px minmax(0, 1fr);
+  gap: 14px;
+  min-height: 78px;
+  align-items: center;
+  border-bottom: 1px solid var(--rule);
+}
+.preview-row:last-child { border-bottom: 0; }
+.preview-row > span:nth-child(2) { display: grid; gap: 3px; }
+.preview-row strong { font-weight: 500; }
+.preview-row small { color: var(--muted); font-size: 12px; }
+
+.preview-cover {
+  display: inline-flex;
+  width: 52px;
+  height: 52px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 3px;
+  font-size: 18px;
+  font-weight: 600;
+}
+.cover-green { background: var(--accent); color: #001b09; }
+.cover-light { background: #d6d6d6; color: #111111; }
+.cover-dark { background: #2a2a2a; color: var(--text); }
+
+@media (max-width: 900px) {
+  .app-bar-inner,
+  .auth-bar,
+  .app-canvas,
+  .auth-layout { width: min(100% - 40px, 760px); }
+  .desktop-nav,
+  .logout-action { display: none; }
+  .menu-button { display: inline-flex; }
+  .mobile-menu {
+    position: fixed;
+    inset: 49px 0 0;
+    z-index: 30;
+    display: grid;
+    align-content: start;
+    gap: 4px;
+    padding: 24px 20px;
+    background: var(--ground);
+  }
+  .mobile-menu[hidden] { display: none; }
+  .mobile-menu a,
+  .mobile-menu button {
+    min-height: 52px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    border: 0;
+    border-bottom: 1px solid var(--rule);
+    background: transparent;
+    color: var(--muted);
+    font-weight: 500;
+    text-align: left;
+  }
+  .mobile-menu a[aria-current="page"] { color: var(--text); }
+  .data-grid { grid-template-columns: 1fr; }
+  .auth-layout {
+    padding: 54px 0;
+    grid-template-columns: 1fr;
+    gap: 44px;
+    align-content: center;
+    align-items: start;
+  }
+  .auth-copy { max-width: 620px; }
 }
 
-.spotify-login-btn:active{
-  transform: translateY(0);
-  box-shadow: 0 8px 20px rgba(29,185,84,0.30);
+@media (max-width: 560px) {
+  .app-bar-inner,
+  .auth-bar,
+  .app-canvas,
+  .auth-layout { width: calc(100% - 32px); }
+  .app-canvas { padding: 28px 0 40px; }
+  .title-row,
+  .profile-title-row { align-items: flex-start; flex-direction: column; gap: 16px; }
+  .profile-identity { width: 100%; padding-top: 14px; border-top: 1px solid var(--rule); }
+  .feature-panel,
+  .data-panel,
+  .auth-preview { padding: 16px; }
+  .panel-heading { flex-direction: column; gap: 12px; }
+  .result-count { width: auto; justify-content: flex-start; }
+  .widget { min-height: 280px; max-height: none; }
+  .media-row { grid-template-columns: 48px minmax(0, 1fr) auto; gap: 11px; min-height: 70px; }
+  .media-row img { width: 48px; height: 48px; }
+  .media-link { min-width: 52px; min-height: 44px; }
+  .auth-layout { min-height: auto; padding: 44px 0; align-content: start; }
+  .auth-status { font-size: 0; gap: 0; }
+  .auth-status .status-dot { width: 8px; height: 8px; }
+  .auth-lede { font-size: 16px; }
+  .spotify-frame { min-height: 420px; }
+  .spotify-frame iframe { height: 560px; }
 }
 
-
-/* Footer */
-footer{ margin-top: 28px; }
-
-.bottom{
-  width: 100%;
-  min-height: 72px;     /* not massive */
-  background: rgba(0,0,0,0.55);
-  border-top: 1px solid rgba(255,255,255,0.08);
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; }
 }
-

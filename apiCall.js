@@ -8,8 +8,46 @@
 // - forMe.html:   getTrackRec(), getArtistRec()
 // - success.html: getTopSongsGlobal()
 
-const SERVER_URL = window.location.origin;
+const SERVER_URL =
+  window.location.protocol === "file:"
+    ? "http://127.0.0.1:8000"
+    : window.location.origin;
 const TOKEN_COOKIE = "accessToken";
+const PREVIEW_MODE = new URLSearchParams(window.location.search).has("preview");
+
+function previewImage(label, background = "#1ed760", foreground = "#001b09") {
+  const safeLabel = String(label).replace(/[<>&"']/g, "").slice(0, 2);
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="160" height="160" viewBox="0 0 160 160"><rect width="160" height="160" fill="${background}"/><circle cx="118" cy="42" r="24" fill="none" stroke="${foreground}" stroke-width="4"/><text x="20" y="132" fill="${foreground}" font-family="Arial,sans-serif" font-size="58" font-weight="700">${safeLabel}</text></svg>`;
+  return `data:image/svg+xml,${encodeURIComponent(svg)}`;
+}
+
+const PREVIEW_TRACKS = [
+  ["Nights", "Frank Ocean", "Blonde", "NO", "#d8d8d8", "#111111"],
+  ["Dreams", "Fleetwood Mac", "Rumours", "DR", "#1ed760", "#001b09"],
+  ["Pink + White", "Frank Ocean", "Blonde", "PW", "#2a2a2a", "#ffffff"],
+  ["Motion Sickness", "Phoebe Bridgers", "Stranger in the Alps", "MS", "#d8d8d8", "#111111"],
+  ["After Hours", "The Weeknd", "After Hours", "AH", "#1ed760", "#001b09"],
+].map(([name, artist, album, label, bg, fg], index) => ({
+  id: `preview-track-${index}`,
+  name,
+  artists: [{ name: artist }],
+  album: { name: album, images: [{ url: previewImage(label, bg, fg) }] },
+  external_urls: { spotify: "https://open.spotify.com/" },
+}));
+
+const PREVIEW_ARTISTS = [
+  ["Frank Ocean", "18,400,000 followers", "FO", "#1ed760", "#001b09"],
+  ["Phoebe Bridgers", "4,200,000 followers", "PB", "#d8d8d8", "#111111"],
+  ["Fleetwood Mac", "13,700,000 followers", "FM", "#2a2a2a", "#ffffff"],
+  ["The Weeknd", "98,000,000 followers", "TW", "#1ed760", "#001b09"],
+  ["SZA", "27,600,000 followers", "SZ", "#d8d8d8", "#111111"],
+].map(([name, followers, label, bg, fg], index) => ({
+  id: `preview-artist-${index}`,
+  name,
+  followers: { total: Number(followers.replace(/\D/g, "")) },
+  images: [{ url: previewImage(label, bg, fg) }],
+  external_urls: { spotify: "https://open.spotify.com/" },
+}));
 
 // ---------------------------
 // Cookies / Auth
@@ -26,8 +64,7 @@ async function fetchWebApi(endpoint, method = "GET", body) {
 
   if (!accessToken) {
     // No token cookie -> kick to login
-    // window.location.href = SERVER_URL;
-    window.location.href = "/login";
+    window.location.href = SERVER_URL;
     return null;
   }
 
@@ -249,45 +286,40 @@ function renderTrackCards(tracks, containerId) {
   if (!container) return;
 
   container.innerHTML = "";
+  if (!tracks.length) {
+    container.innerHTML = '<p class="state-message">No tracks found for this view yet.</p>';
+    return;
+  }
   const ul = document.createElement("ul");
-  ul.style.padding = "0";
 
   tracks.forEach((t) => {
     const li = document.createElement("li");
-    li.style.listStyle = "none";
-    li.style.display = "flex";
-    li.style.alignItems = "center";
-    li.style.gap = "12px";
-    li.style.padding = "10px";
+    li.className = "media-row track-row";
 
     const img = document.createElement("img");
     img.src = t.album?.images?.[0]?.url || "";
-    img.alt = t.name || "track";
-    img.style.width = "64px";
-    img.style.height = "64px";
-    img.style.borderRadius = "10px";
-    img.style.objectFit = "cover";
+    img.alt = t.album?.name ? `${t.album.name} cover` : "Track cover";
 
     const text = document.createElement("div");
-    text.style.flex = "1";
+    text.className = "media-copy";
 
     const title = document.createElement("div");
     title.textContent = t.name || "";
-    title.style.fontWeight = "600";
+    title.className = "media-title";
 
     const meta = document.createElement("div");
     const artists = (t.artists || []).map((a) => a.name).join(", ");
     const album = t.album?.name ? ` • ${t.album.name}` : "";
     meta.textContent = `${artists}${album}`;
-    meta.style.fontSize = "0.9em";
-    meta.style.opacity = "0.85";
+    meta.className = "media-meta";
 
     const link = document.createElement("a");
     link.href = t.external_urls?.spotify || "#";
     link.target = "_blank";
     link.rel = "noreferrer";
     link.textContent = "Open";
-    link.style.marginLeft = "auto";
+    link.className = "media-link";
+    link.setAttribute("aria-label", `Open ${t.name || "track"} in Spotify`);
 
     text.appendChild(title);
     text.appendChild(meta);
@@ -306,46 +338,41 @@ function renderArtistCards(artists, containerId) {
   if (!container) return;
 
   container.innerHTML = "";
+  if (!artists.length) {
+    container.innerHTML = '<p class="state-message">No artists found for this view yet.</p>';
+    return;
+  }
   const ul = document.createElement("ul");
-  ul.style.padding = "0";
 
   artists.forEach((a) => {
     const li = document.createElement("li");
-    li.style.listStyle = "none";
-    li.style.display = "flex";
-    li.style.alignItems = "center";
-    li.style.gap = "12px";
-    li.style.padding = "10px";
+    li.className = "media-row artist-row";
 
     const img = document.createElement("img");
     img.src = a.images?.[0]?.url || "";
-    img.alt = a.name || "artist";
-    img.style.width = "64px";
-    img.style.height = "64px";
-    img.style.borderRadius = "50%";
-    img.style.objectFit = "cover";
+    img.alt = a.name ? `${a.name} portrait` : "Artist portrait";
 
     const text = document.createElement("div");
-    text.style.flex = "1";
+    text.className = "media-copy";
 
     const name = document.createElement("div");
     name.textContent = a.name || "";
-    name.style.fontWeight = "600";
+    name.className = "media-title";
 
     const meta = document.createElement("div");
     const followers = a.followers?.total
       ? `${a.followers.total.toLocaleString()} followers`
       : "";
     meta.textContent = followers;
-    meta.style.fontSize = "0.9em";
-    meta.style.opacity = "0.85";
+    meta.className = "media-meta";
 
     const link = document.createElement("a");
     link.href = a.external_urls?.spotify || "#";
     link.target = "_blank";
     link.rel = "noreferrer";
     link.textContent = "Open";
-    link.style.marginLeft = "auto";
+    link.className = "media-link";
+    link.setAttribute("aria-label", `Open ${a.name || "artist"} in Spotify`);
 
     text.appendChild(name);
     text.appendChild(meta);
@@ -359,10 +386,31 @@ function renderArtistCards(artists, containerId) {
   container.appendChild(ul);
 }
 
+function renderState(containerId, message, isError = false) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  container.innerHTML = "";
+  const state = document.createElement("p");
+  state.className = `state-message${isError ? " error" : ""}`;
+  state.textContent = message;
+  container.appendChild(state);
+}
+
 // ---------------------------
 // Page functions
 // ---------------------------
 async function populateUI() {
+  if (PREVIEW_MODE) {
+    const display = document.getElementById("displayName");
+    const avatar = document.getElementById("avatar");
+    if (display) display.textContent = "Preview listener";
+    if (avatar) {
+      avatar.src = previewImage("PL", "#1ed760", "#001b09");
+      avatar.alt = "Preview listener avatar";
+    }
+    return;
+  }
+
   const me = await fetchWebApi("v1/me", "GET");
   if (!me) return;
 
@@ -377,90 +425,68 @@ async function populateUI() {
 }
 
 async function getTopTracks(limit = 5) {
-  const data = await fetchWebApi(
-    `v1/me/top/tracks?limit=${limit}&time_range=short_term`,
-    "GET"
-  );
-  if (!data?.items) return;
-  renderTrackCards(data.items, "widgetContainer1");
+  const safeLimit = Math.min(50, Math.max(1, Number(limit) || 5));
+  if (PREVIEW_MODE) {
+    renderTrackCards(PREVIEW_TRACKS.slice(0, safeLimit), "widgetContainer1");
+    return;
+  }
+  try {
+    const data = await fetchWebApi(
+      `v1/me/top/tracks?limit=${safeLimit}&time_range=short_term`,
+      "GET"
+    );
+    if (data?.items) renderTrackCards(data.items, "widgetContainer1");
+  } catch (error) {
+    renderState("widgetContainer1", "Couldn't load your top tracks. Try refreshing this page.", true);
+    console.error(error);
+  }
 }
 
 async function getTopArtists(limit = 5) {
-  const data = await fetchWebApi(
-    `v1/me/top/artists?limit=${limit}&time_range=short_term`,
-    "GET"
-  );
-  if (!data?.items) return;
-  renderArtistCards(data.items, "widgetContainer2");
+  const safeLimit = Math.min(50, Math.max(1, Number(limit) || 5));
+  if (PREVIEW_MODE) {
+    renderArtistCards(PREVIEW_ARTISTS.slice(0, safeLimit), "widgetContainer2");
+    return;
+  }
+  try {
+    const data = await fetchWebApi(
+      `v1/me/top/artists?limit=${safeLimit}&time_range=short_term`,
+      "GET"
+    );
+    if (data?.items) renderArtistCards(data.items, "widgetContainer2");
+  } catch (error) {
+    renderState("widgetContainer2", "Couldn't load your top artists. Try refreshing this page.", true);
+    console.error(error);
+  }
 }
 
 // Spotify has restricted many "charts/editorial" Web API endpoints for new/dev apps.
 // The most reliable way to show "Top 50 Global" is the embed player.
-async function getTopSongsGlobal() {
-  const containerId = "widgetContainer5";
-  const container = document.getElementById(containerId);
+function getTopSongsGlobal() {
+  const container = document.getElementById("widgetContainer5");
   if (!container) return;
 
-  // Lightweight loading state
-  container.innerHTML = `<div style="padding:12px;color:rgba(255,255,255,0.75)">Loading Top 50 Global…</div>`;
-
-  try {
-    const playlistId = "37i9dQZEVXbMDoHDwVN2tF";
-    const data = await fetchWebApi(
-      `v1/playlists/${playlistId}/tracks?limit=50&market=CA`,
-      "GET"
-    );
-
-    const tracks = (data?.items || [])
-      .map((it) => it && it.track)
-      .filter((t) => t && t.id && t.name && t.album);
-
-    if (!tracks.length) {
-      container.innerHTML = `
-        <div style="padding:12px;color:rgba(255,255,255,0.75)">
-          Couldn’t load Top 50 Global right now.
-          <div style="margin-top:10px">
-            <a href="https://open.spotify.com/playlist/${playlistId}" target="_blank" rel="noreferrer"
-               style="color:#1db954;font-weight:800">Open in Spotify</a>
-          </div>
-        </div>`;
-      return;
-    }
-
-    // Add rank numbers (optional) by attaching a __rank field for rendering.
-    const ranked = tracks.map((t, i) => ({ ...t, __rank: i + 1 }));
-    renderTrackCards(ranked, containerId);
-
-    // Add rank labels without rewriting your whole renderer:
-    // prepend "1. " to the title line after render.
-    const ul = container.querySelector("ul");
-    if (ul) {
-      const lis = ul.querySelectorAll("li");
-      lis.forEach((li, idx) => {
-        const titleEl = li.querySelector("div > div"); // first title div
-        if (titleEl && titleEl.textContent && !titleEl.textContent.startsWith(`${idx + 1}. `)) {
-          titleEl.textContent = `${idx + 1}. ${titleEl.textContent}`;
-        }
-      });
-    }
-  } catch (err) {
-    console.error("Error fetching Top 50 Global:", err);
-    container.innerHTML = `
-      <div style="padding:12px;color:rgba(255,255,255,0.75)">
-        Error loading Top 50 Global.
-        <div style="margin-top:10px">
-          <a href="https://open.spotify.com/playlist/37i9dQZEVXbMDoHDwVN2tF" target="_blank" rel="noreferrer"
-             style="color:#1db954;font-weight:800">Open in Spotify</a>
-        </div>
-      </div>`;
-  }
+  container.innerHTML = `
+    <iframe
+      style="border-radius:12px"
+      src="https://open.spotify.com/embed/playlist/37i9dQZEVXbMDoHDwVN2tF"
+      width="75%"
+      height="700"
+      frameborder="0"
+      allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+      loading="lazy">
+    </iframe>
+  `;
 }
-
 
 // ---------------------------
 // "Personally Made For You"
 // ---------------------------
 async function getTrackRec() {
+  if (PREVIEW_MODE) {
+    renderTrackCards([...PREVIEW_TRACKS].reverse(), "widgetContainer3");
+    return;
+  }
   try {
     // 1) Your top artists (seed taste)
     const topArtists = await fetchWebApi(
@@ -547,10 +573,19 @@ async function getTrackRec() {
     renderTrackCards(finalTracks, "widgetContainer3");
   } catch (e) {
     console.error("Error building Track Recs:", e.message);
+    renderState(
+      "widgetContainer3",
+      "Couldn't build track recommendations right now. Try refreshing this page.",
+      true
+    );
   }
 }
 
 async function getArtistRec() {
+  if (PREVIEW_MODE) {
+    renderArtistCards([...PREVIEW_ARTISTS].reverse(), "widgetContainer4");
+    return;
+  }
   try {
     // Avoid recommending artists already in your top list
     const topArtists = await fetchWebApi(
@@ -592,5 +627,10 @@ async function getArtistRec() {
     renderArtistCards(artistObjs, "widgetContainer4");
   } catch (e) {
     console.error("Error building Artist Recs:", e.message);
+    renderState(
+      "widgetContainer4",
+      "Couldn't build artist recommendations right now. Try refreshing this page.",
+      true
+    );
   }
 }

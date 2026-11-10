@@ -43,9 +43,22 @@ app.use(
 app.use(express.static(__dirname));
 
 // --- Routes ---
+app.get("/favicon.ico", (req, res) => res.status(204).end());
+
+app.get("/runtime-config.js", (req, res) => {
+  const spotifyAuthConfigured = Boolean(clientId && clientSecret && redirectUri);
+  res.type("application/javascript").send(
+    `window.SPOTICUSTOM_CONFIG = ${JSON.stringify({ spotifyAuthConfigured })};`
+  );
+});
+
 app.get("/", (req, res) => res.sendFile(path.join(__dirname, "Starting.html")));
 
 app.get("/login", (req, res) => {
+  if (!clientId || !clientSecret || !redirectUri) {
+    return res.redirect("/?auth=unconfigured");
+  }
+
   const authUrl =
     `https://accounts.spotify.com/authorize?client_id=${clientId}` +
     `&response_type=code` +
@@ -80,9 +93,6 @@ app.get("/callback", async (req, res) => {
     const refreshToken = tokenResponse.data.refresh_token;
     const expiresIn = tokenResponse.data.expires_in; // seconds
 
-    console.log("Access Token:", accessToken);
-    console.log("Refresh Token:", refreshToken);
-
     // Store for later if you want to refresh server-side (optional)
     req.session.refreshToken = refreshToken;
 
@@ -90,7 +100,6 @@ app.get("/callback", async (req, res) => {
     res.cookie(ACCESS_COOKIE, accessToken, {
       sameSite: "lax",
       maxAge: expiresIn * 1000,
-      secure: true,
     });
 
     // Redirect so refresh/back doesn't re-use the code
