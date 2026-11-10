@@ -39,6 +39,7 @@ app.get("/favicon.ico", (req, res) => res.status(204).end());
 
 app.get("/runtime-config.js", (req, res) => {
   const spotifyAuthConfigured = Boolean(clientId && clientSecret && redirectUri);
+  res.set("Cache-Control", "no-store");
   res.type("application/javascript").send(
     `window.SPOTICUSTOM_CONFIG = ${JSON.stringify({ spotifyAuthConfigured })};`
   );
