@@ -8,7 +8,6 @@
 const express = require("express");
 const axios = require("axios");
 const path = require("path");
-const session = require("express-session");
 const cookieParser = require("cookie-parser");
 
 const app = express();
@@ -33,13 +32,6 @@ const ACCESS_COOKIE = "accessToken";
 
 // --- Middleware ---
 app.use(cookieParser());
-app.use(
-  session({
-    secret: "spotify-session-secret",
-    resave: false,
-    saveUninitialized: true,
-  })
-);
 app.use(express.static(__dirname));
 
 // --- Routes ---
@@ -90,11 +82,7 @@ app.get("/callback", async (req, res) => {
     );
 
     const accessToken = tokenResponse.data.access_token;
-    const refreshToken = tokenResponse.data.refresh_token;
     const expiresIn = tokenResponse.data.expires_in; // seconds
-
-    // Store for later if you want to refresh server-side (optional)
-    req.session.refreshToken = refreshToken;
 
     // Set cookie for frontend JS to use
     res.cookie(ACCESS_COOKIE, accessToken, {
@@ -114,10 +102,8 @@ app.get("/callback", async (req, res) => {
 });
 
 app.get("/logout", (req, res) => {
-  req.session.destroy(() => {
-    res.clearCookie(ACCESS_COOKIE);
-    res.redirect("/");
-  });
+  res.clearCookie(ACCESS_COOKIE);
+  res.redirect("/");
 });
 
 app.listen(PORT, () => {
